@@ -1,17 +1,50 @@
-# Azure ## 🏗️ Server Architecture
+# Azure MCP Server Code Explanation
+
+This document provides a detailed explanation of `azure_mcp_server.py` - the enhanced MCP server that provides tools for Azure OpenAI integration.
+
+## � What This Server Does
+
+The `azure_mcp_server.py` file creates a **comprehensive MCP server** that provides multiple tools for Azure OpenAI to use. It's designed to demonstrate the full capabilities of MCP in a production-ready scenario.
+
+## �🏗️ Server Architecture
 
 ```
-┌─────────────────┐    HTTP/SSE      ┌─────────────────┐    Tools/APIs    ┌─────────────────┐
-│   Azure Client  │ ◄─────────────► │   MCP Server    │ ◄─────────────► │  Local System   │
-│ (Python App)    │   port 8000      │ (azure_mcp_    │   Direct calls   │ (Files, Math,   │
-│                 │                  │  server.py)     │                  │  System Info)   │
+┌─────────────────┐    HTTPS/JSON    ┌─────────────────┐    HTTP/SSE      ┌─────────────────┐
+│   Azure OpenAI  │ ◄─────────────► │   MCP Client    │ ◄─────────────► │   MCP Server    │
+│   (Cloud API)   │   Function       │ (Python Bridge) │   Tool Calls     │ (azure_mcp_    │
+│                 │   Calls          │                 │                  │  server.py)     │
 └─────────────────┘                  └─────────────────┘                  └─────────────────┘
          │                                     │                                     │
-         │            Network                  │              Local                  │
+         │          Internet                   │           Network                   │
          │ ◄─────────────────────────────────► │ ◄─────────────────────────────────► │
-    Remote clients                      HTTP Server                        OS/Files
-                                        (Uvicorn/FastAPI)                   (Direct access)
+    OpenAI Service                      Python Client                       Local Tools
+    (NEVER talks to                     (Bridge/Proxy)                    (Real execution)
+     MCP server directly)                                                  (File, Math, etc.)
 ```
+
+## 🔑 Key Architectural Principle
+
+**Azure OpenAI NEVER talks directly to the MCP server!**
+
+### **The Three-Tier Architecture:**
+
+1. **🌐 Azure OpenAI (Tier 1)**: 
+   - Lives in the cloud
+   - Only knows about function definitions
+   - Sends function calls to **your client**
+   - **Never** communicates with MCP server
+
+2. **🔗 Your Client (Tier 2)**:
+   - Acts as a **bridge/proxy**
+   - Connects to Azure OpenAI via HTTPS
+   - Connects to MCP server via HTTP/SSE
+   - Translates between OpenAI functions and MCP tools
+
+3. **🛠️ MCP Server (Tier 3)**:
+   - Runs locally (this file: `azure_mcp_server.py`)
+   - Provides actual tools and capabilities
+   - **Never** talks to Azure OpenAI directly
+   - Only communicates with your client
 
 ## � Network Protocol Details
 

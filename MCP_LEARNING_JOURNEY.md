@@ -116,6 +116,71 @@ python clientnetwork.py
 #### Learning Resources:
 - 📖 [Azure OpenAI + MCP Guide](README_AZURE_OPENAI_MCP.md) - Complete setup and usage guide
 - 📖 [Technical Deep-dive](azure_openai_mcp_explanation.md) - How the integration works internally
+- 📖 [Client Code Explanation](azure_openai_mcp_client_explanation.md) - Detailed breakdown of the Python client code
+- 📖 [Server Code Explanation](azure_mcp_server_explanation.md) - Detailed breakdown of the Python server code
+
+#### **🌐 Network Flow & Connection Details**
+
+Understanding **who initiates what** and **how connections work**:
+
+##### **1. Server Startup (Manual)**
+```bash
+python azure_mcp_server.py
+```
+- **Process**: MCP server starts on localhost:8000
+- **Binding**: 0.0.0.0:8000 (all network interfaces)
+- **Protocol**: HTTP with SSE (Server-Sent Events)
+- **Status**: Waiting for client connections
+
+##### **2. Client Connection (Client Initiates)**
+```bash
+python azure_openai_mcp_client.py
+```
+- **TCP Connection**: Client creates TCP connection to localhost:8000
+- **HTTP Request**: GET /sse (with SSE headers)
+- **Server Response**: text/event-stream (persistent connection)
+- **Result**: Bidirectional communication established
+
+##### **3. Tool Discovery (Client Initiates)**
+```
+Client → Server: list_tools() request
+Server → Client: Available tools (greet, calculate, etc.)
+Client: Converts MCP tools to OpenAI function definitions
+```
+
+##### **4. User Interaction (User Initiates)**
+```
+User → Azure OpenAI: "Calculate 15 * 8"
+Azure OpenAI → Client: Function call request
+Client → MCP Server: call_tool("calculate", {...})
+MCP Server → Client: Tool result
+Client → Azure OpenAI: Tool result
+Azure OpenAI → User: Final response
+```
+
+##### **Connection Architecture**:
+```
+┌─────────────┐    HTTPS     ┌─────────────────┐    TCP/HTTP    ┌─────────────────┐
+│    User     │◄─────────────►│   Azure OpenAI  │               │                 │
+└─────────────┘               │   (Cloud API)   │               │                 │
+                              └─────────────────┘               │                 │
+                                       │                        │                 │
+                                       │ Function Calls          │                 │
+                                       │ (JSON over HTTPS)       │                 │
+                                       ▼                        │                 │
+                              ┌─────────────────┐    SSE/HTTP   │   MCP Server    │
+                              │  Your Client    │◄──────────────►│  (localhost:    │
+                              │  (Python App)   │   Port 8000    │   8000)        │
+                              └─────────────────┘               │                 │
+                                                                └─────────────────┘
+```
+
+##### **Port & Protocol Summary**:
+- **Port 8000**: MCP Server (HTTP/SSE)
+- **Port 443**: Azure OpenAI API (HTTPS)
+- **Initiator**: Client initiates connection to MCP server
+- **Persistence**: SSE connection remains open
+- **Security**: Local MCP server, encrypted Azure OpenAI API
 
 #### Hands-on Exercise:
 
@@ -256,6 +321,8 @@ python quick_test.py
 - [`sse_explanation.md`](sse_explanation.md) - SSE technical details
 - [`README_AZURE_OPENAI_MCP.md`](README_AZURE_OPENAI_MCP.md) - Azure OpenAI integration guide
 - [`azure_openai_mcp_explanation.md`](azure_openai_mcp_explanation.md) - Azure OpenAI technical details
+- [`azure_openai_mcp_client_explanation.md`](azure_openai_mcp_client_explanation.md) - Client code breakdown
+- [`azure_mcp_server_explanation.md`](azure_mcp_server_explanation.md) - Server code breakdown
 
 ### **Utility Files**:
 - [`setup.py`](setup.py) - Configuration helper

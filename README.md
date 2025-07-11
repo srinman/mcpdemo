@@ -45,6 +45,8 @@ Jump to the practical implementation guide:
 | `MCP_LEARNING_JOURNEY.md` | **Complete learning path** |
 | `README_AZURE_OPENAI_MCP.md` | Azure OpenAI integration guide |
 | `azure_openai_mcp_explanation.md` | Technical deep-dive |
+| `azure_openai_mcp_client_explanation.md` | Client code breakdown |
+| `azure_mcp_server_explanation.md` | Server code breakdown |
 | `server_explanation.md` | Basic server explanation |
 | `client_explanation.md` | Basic client explanation |
 | `servernetwork_explanation.md` | Network server explanation |

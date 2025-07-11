@@ -10,10 +10,326 @@ The `azure_openai_mcp_client.py` file creates a **bridge** between Azure OpenAI'
 2. **Call** MCP tools through function calling
 3. **Use** real-time tool results in conversations
 
-## 🏗️ Code Architecture
+## 🏗️ Client Architecture
 
 ```
-Azure OpenAI ← Function Calls → AzureOpenAIMCPClient ← SSE → MCP Server
+┌─────────────────┐    HTTPS/JSON    ┌─────────────────┐    HTTP/SSE      ┌─────────────────┐
+│   Azure OpenAI  │ ◄─────────────► │   MCP Client    │ ◄─────────────► │   MCP Server    │
+│   (Cloud API)   │   Function       │ (azure_openai_  │   Tool Calls     │ (localhost:8000)│
+│                 │   Calling        │  mcp_client.py) │                  │                 │
+└─────────────────┘                  └─────────────────┘                  └─────────────────┘
+         │                                     │                                     │
+         │          Internet                   │           Network                   │
+         │ ◄─────────────────────────────────► │ ◄─────────────────────────────────► │
+    OpenAI Service                      Python Client                       Local Tools
+    (Function calls)                    (Bridge/Proxy)                    (Real execution)
+```
+
+## � Connection Establishment Details
+
+### 1. MCP Server Connection:
+```
+Client                    Network                    MCP Server
+  │                         │                         │
+  │ 1. HTTP GET /sse        │                         │
+  │────────────────────────►│────────────────────────►│
+  │                         │                         │
+  │ 2. SSE Headers          │                         │
+  │◄────────────────────────│◄────────────────────────│
+  │                         │                         │
+  │ 3. MCP Initialize       │                         │
+  │────────────────────────►│────────────────────────►│
+  │                         │                         │
+  │ 4. Server Info          │                         │
+  │◄────────────────────────│◄────────────────────────│
+  │                         │                         │
+  │ 5. List Tools           │                         │
+  │────────────────────────►│────────────────────────►│
+  │                         │                         │
+  │ 6. Tool Definitions     │                         │
+  │◄────────────────────────│◄────────────────────────│
+```
+
+### 2. Azure OpenAI Connection:
+```
+Client                    Internet                   Azure OpenAI
+  │                         │                         │
+  │ 1. HTTPS Request        │                         │
+  │────────────────────────►│────────────────────────►│
+  │                         │                         │
+  │ 2. Authentication       │                         │
+  │────────────────────────►│────────────────────────►│
+  │                         │                         │
+  │ 3. Function Definitions │                         │
+  │────────────────────────►│────────────────────────►│
+  │                         │                         │
+  │ 4. Chat Response        │                         │
+  │◄────────────────────────│◄────────────────────────│
+```
+
+### 3. Tool Mapping Process:
+```
+MCP Tools                Function Definitions         Azure OpenAI
+    │                          │                          │
+    │ 1. greet(name)           │                          │
+    │─────────────────────────►│                          │
+    │                          │                          │
+    │                          │ 2. OpenAI Function       │
+    │                          │ {                        │
+    │                          │   "name": "greet",       │
+    │                          │   "parameters": {...}    │
+    │                          │ }                        │
+    │                          │─────────────────────────►│
+    │                          │                          │
+    │ 3. calculate(op,a,b)     │                          │
+    │─────────────────────────►│                          │
+    │                          │                          │
+    │                          │ 4. OpenAI Function       │
+    │                          │ {                        │
+    │                          │   "name": "calculate",   │
+    │                          │   "parameters": {...}    │
+    │                          │ }                        │
+    │                          │─────────────────────────►│
+```
+
+## �🔄 Complete Integration Flow
+
+### System Initialization:
+1. **Environment Setup**: Load .env file and Azure OpenAI credentials
+2. **MCP Connection**: Establish SSE connection to local MCP server
+3. **Tool Discovery**: List available tools from MCP server
+4. **Function Mapping**: Convert MCP tools to OpenAI function definitions
+5. **Client Ready**: System ready for user interactions
+
+### User Interaction Sequence:
+```
+User                Azure OpenAI           Client                 MCP Server           Local System
+  │                      │                   │                       │                     │
+  │ 1. User Question     │                   │                       │                     │
+  │─────────────────────►│                   │                       │                     │
+  │                      │                   │                       │                     │
+  │                      │ 2. Analyze + Tools│                       │                     │
+  │                      │──────────────────►│                       │                     │
+  │                      │                   │                       │                     │
+  │                      │ 3. Function Calls │                       │                     │
+  │                      │──────────────────►│                       │                     │
+  │                      │                   │                       │                     │
+  │                      │                   │ 4. MCP Tool Call      │                     │
+  │                      │                   │──────────────────────►│                     │
+  │                      │                   │                       │                     │
+  │                      │                   │                       │ 5. Execute Tool     │
+  │                      │                   │                       │────────────────────►│
+  │                      │                   │                       │                     │
+  │                      │                   │                       │ 6. Tool Result      │
+  │                      │                   │                       │◄────────────────────│
+  │                      │                   │                       │                     │
+  │                      │                   │ 7. Tool Response      │                     │
+  │                      │                   │◄──────────────────────│                     │
+  │                      │                   │                       │                     │
+  │                      │ 8. Tool Results   │                       │                     │
+  │                      │◄──────────────────│                       │                     │
+  │                      │                   │                       │                     │
+  │                      │ 9. Generate Response                      │                     │
+  │                      │──────────────────►│                       │                     │
+  │                      │                   │                       │                     │
+  │ 10. Final Answer     │                   │                       │                     │
+  │◄─────────────────────│                   │                       │                     │
+```
+
+### Multi-Step Tool Execution:
+```
+User: "Calculate 25 * 4 and save the result to math.txt"
+
+User                Azure OpenAI           Client                 MCP Server
+  │                      │                   │                       │
+  │ Complex request      │                   │                       │
+  │─────────────────────►│                   │                       │
+  │                      │                   │                       │
+  │                      │ Function: calc()  │                       │
+  │                      │──────────────────►│                       │
+  │                      │                   │                       │
+  │                      │                   │ calculate(25, 4)      │
+  │                      │                   │──────────────────────►│
+  │                      │                   │                       │
+  │                      │                   │ Result: 100           │
+  │                      │                   │◄──────────────────────│
+  │                      │                   │                       │
+  │                      │ Result: 100       │                       │
+  │                      │◄──────────────────│                       │
+  │                      │                   │                       │
+  │                      │ Function: save()  │                       │
+  │                      │──────────────────►│                       │
+  │                      │                   │                       │
+  │                      │                   │ save_file(math.txt)   │
+  │                      │                   │──────────────────────►│
+  │                      │                   │                       │
+  │                      │                   │ File saved            │
+  │                      │                   │◄──────────────────────│
+  │                      │                   │                       │
+  │                      │ File saved        │                       │
+  │                      │◄──────────────────│                       │
+  │                      │                   │                       │
+  │                      │ Generate final    │                       │
+  │                      │ response          │                       │
+  │                      │──────────────────►│                       │
+  │                      │                   │                       │
+  │ "I calculated 25*4=100│                   │                       │
+  │ and saved to math.txt"│                   │                       │
+  │◄─────────────────────│                   │                       │
+```
+
+## 🌐 Transport Protocol Analysis
+
+### Dual Network Architecture:
+```
+Internet (HTTPS)          Local Network (HTTP/SSE)
+     │                           │
+     │ ◄─── Azure OpenAI ───────►│ ◄─── MCP Client ───────►│ ◄─── MCP Server
+     │      (Cloud API)          │      (Bridge)           │      (Local Tools)
+     │                           │                         │
+ Encrypted                   Unencrypted               Direct calls
+ Remote calls               Local calls                System access
+```
+
+### Protocol Comparison:
+| Aspect | Azure OpenAI Connection | MCP Server Connection |
+|--------|-------------------------|----------------------|
+| **Protocol** | HTTPS/TLS | HTTP/SSE |
+| **Security** | Encrypted | Local network |
+| **Location** | Cloud/Internet | localhost:8000 |
+| **Format** | JSON/REST | JSON-RPC/SSE |
+| **Purpose** | AI inference | Tool execution |
+| **Latency** | Higher (network) | Lower (local) |
+| **Bandwidth** | Metered | Unlimited |
+
+### Message Flow Types:
+```
+1. User → Client → Azure OpenAI (Question)
+   └─ Format: REST API call with function definitions
+
+2. Azure OpenAI → Client (Function calls)
+   └─ Format: JSON with tool_calls array
+
+3. Client → MCP Server (Tool execution)
+   └─ Format: JSON-RPC over SSE
+
+4. MCP Server → Client (Tool results)
+   └─ Format: JSON-RPC response
+
+5. Client → Azure OpenAI (Tool results)
+   └─ Format: REST API with tool results
+
+6. Azure OpenAI → Client → User (Final answer)
+   └─ Format: Natural language response
+```
+
+## 📨 Network Protocol Details
+
+### Azure OpenAI API Call:
+```http
+POST /openai/deployments/gpt-4o-mini/chat/completions?api-version=2024-10-21 HTTP/1.1
+Host: your-resource.openai.azure.com
+Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json
+
+{
+  "messages": [
+    {
+      "role": "user",
+      "content": "Calculate 15 * 8"
+    }
+  ],
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "calculate",
+        "description": "Perform mathematical operations",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "operation": {"type": "string"},
+            "a": {"type": "number"},
+            "b": {"type": "number"}
+          },
+          "required": ["operation", "a", "b"]
+        }
+      }
+    }
+  ],
+  "tool_choice": "auto"
+}
+```
+
+### Azure OpenAI Function Call Response:
+```json
+{
+  "choices": [
+    {
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_abc123",
+            "type": "function",
+            "function": {
+              "name": "calculate",
+              "arguments": "{\"operation\": \"multiply\", \"a\": 15, \"b\": 8}"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+```
+
+### MCP Tool Call (to Local Server):
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "tools/call",
+  "params": {
+    "name": "calculate",
+    "arguments": {
+      "operation": "multiply",
+      "a": 15,
+      "b": 8
+    }
+  },
+  "id": 1
+}
+```
+
+### MCP Tool Response:
+```json
+{
+  "jsonrpc": "2.0",
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Result: 15.0 multiply 8.0 = 120.0"
+      }
+    ]
+  },
+  "id": 1
+}
+```
+
+### Final Azure OpenAI Response:
+```json
+{
+  "choices": [
+    {
+      "message": {
+        "role": "assistant",
+        "content": "15 times 8 equals 120."
+      }
+    }
+  ]
+}
 ```
 
 ## 📋 Code Structure Breakdown

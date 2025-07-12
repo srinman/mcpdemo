@@ -662,3 +662,255 @@ This code demonstrates:
 - **Protocol bridging** between different systems
 
 The `azure_openai_mcp_client.py` file is a complete example of how to create a production-ready integration between Azure OpenAI and MCP servers! 🚀
+
+## 🔍 **Understanding `message.tool_calls` - How Azure OpenAI Decides to Use Tools**
+
+One of the most important aspects of this integration is understanding **when and how** Azure OpenAI populates the `message.tool_calls` field. This section explains the decision-making process in detail.
+
+### **❓ The Key Question: "When does `message.tool_calls` get populated?"**
+
+The `message.tool_calls` field is populated by **Azure OpenAI** when it analyzes your request and determines that one or more tools are needed to fulfill it.
+
+### **🧠 Azure OpenAI's Decision Process**
+
+```python
+# This is what happens inside Azure OpenAI when it receives your request:
+
+1. User Input: "Calculate 15 * 8"
+2. Available Tools: [greet, calculate, save_text_file, read_text_file, get_weather, get_system_info]
+3. Tool Analysis: "The user wants a calculation. I see a 'calculate' tool available."
+4. Decision: "I need to use the calculate tool"
+5. Response: Populate message.tool_calls with the calculate function call
+```
+
+### **📊 Decision Matrix - When Tools Are Used**
+
+| User Input | Azure OpenAI Analysis | `message.tool_calls` Result |
+|------------|----------------------|---------------------------|
+| "Calculate 15 * 8" | "Math operation needed" | `[calculate_tool_call]` |
+| "Save 'Hello' to file.txt" | "File operation needed" | `[save_text_file_tool_call]` |
+| "What's your name?" | "I can answer directly" | `None` or `[]` |
+| "Calculate 5+3 then save to math.txt" | "Need both tools" | `[calculate_tool_call, save_file_tool_call]` |
+| "Tell me about the weather in NYC" | "Weather data needed" | `[get_weather_tool_call]` |
+
+### **📝 Actual Azure OpenAI Response Examples**
+
+#### **Example 1: Tool Call Required**
+```python
+# User: "Calculate 15 * 8"
+# Azure OpenAI Response:
+{
+    "choices": [
+        {
+            "message": {
+                "role": "assistant",
+                "content": null,  # No direct text response
+                "tool_calls": [   # ← This is what we check with if message.tool_calls:
+                    {
+                        "id": "call_abc123",
+                        "type": "function",
+                        "function": {
+                            "name": "calculate",
+                            "arguments": '{"operation": "multiply", "a": 15, "b": 8}'
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
+```
+
+#### **Example 2: No Tool Call Needed**
+```python
+# User: "What's your name?"
+# Azure OpenAI Response:
+{
+    "choices": [
+        {
+            "message": {
+                "role": "assistant",
+                "content": "I'm an AI assistant created by OpenAI.",  # Direct response
+                "tool_calls": None  # ← No tools needed
+            }
+        }
+    ]
+}
+```
+
+#### **Example 3: Multiple Tool Calls**
+```python
+# User: "Calculate 10 + 5 and save the result to math.txt"
+# Azure OpenAI Response:
+{
+    "choices": [
+        {
+            "message": {
+                "role": "assistant",
+                "content": null,
+                "tool_calls": [   # ← Multiple tools!
+                    {
+                        "id": "call_calc1",
+                        "type": "function",
+                        "function": {
+                            "name": "calculate",
+                            "arguments": '{"operation": "add", "a": 10, "b": 5}'
+                        }
+                    },
+                    {
+                        "id": "call_save1",
+                        "type": "function",
+                        "function": {
+                            "name": "save_text_file",
+                            "arguments": '{"filename": "math.txt", "content": "10 + 5 = 15"}'
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
+```
+
+### **🔄 Complete Flow with Tool Calls**
+
+```python
+# Step-by-step breakdown of what happens:
+
+1. CLIENT SENDS REQUEST:
+   client.chat.completions.create(
+       model="gpt-4o-mini",
+       messages=[{"role": "user", "content": "Calculate 15 * 8"}],
+       tools=[calculate_tool_definition],  # ← Available tools
+       tool_choice="auto"  # ← Let Azure OpenAI decide
+   )
+
+2. AZURE OPENAI ANALYZES:
+   - Input: "Calculate 15 * 8"
+   - Available tools: calculate (with multiply operation)
+   - Decision: "I need to use the calculate tool"
+
+3. AZURE OPENAI RESPONDS:
+   response = {
+       "choices": [{
+           "message": {
+               "tool_calls": [  # ← This gets populated!
+                   {
+                       "function": {
+                           "name": "calculate",
+                           "arguments": '{"operation": "multiply", "a": 15, "b": 8}'
+                       }
+                   }
+               ]
+           }
+       }]
+   }
+
+4. CLIENT CHECKS:
+   message = response.choices[0].message
+   if message.tool_calls:  # ← This condition is TRUE
+       # Execute the tools...
+
+5. CLIENT EXECUTES TOOLS:
+   for tool_call in message.tool_calls:
+       result = await self.call_mcp_tool(tool_call.function.name, tool_call.function.arguments)
+
+6. CLIENT SENDS RESULTS BACK:
+   # Add tool results to conversation and get final response
+```
+
+### **🎯 Key Factors That Influence Tool Selection**
+
+#### **1. Tool Descriptions**
+```python
+# Well-written descriptions help Azure OpenAI choose correctly:
+"description": "Perform mathematical operations (add, subtract, multiply, divide)"
+# Clear → Better tool selection
+```
+
+#### **2. Parameter Definitions**
+```python
+# Specific parameters help Azure OpenAI format calls correctly:
+"parameters": {
+    "operation": {"type": "string", "description": "add, subtract, multiply, divide"},
+    "a": {"type": "number", "description": "First number"},
+    "b": {"type": "number", "description": "Second number"}
+}
+```
+
+#### **3. User Intent Recognition**
+```python
+# Azure OpenAI analyzes user intent:
+"Calculate 15 * 8" → Math operation → calculate tool
+"Save to file" → File operation → save_text_file tool
+"What's the weather?" → Weather data → get_weather tool
+```
+
+### **🚫 Common Scenarios Where Tools Are NOT Used**
+
+```python
+# These requests typically don't trigger tool calls:
+
+1. "Hello" → Direct greeting response
+2. "What's your name?" → Direct identity response  
+3. "Explain quantum physics" → Knowledge-based response
+4. "Tell me a joke" → Creative response
+5. "What day is it?" → If no date/time tool available
+```
+
+### **🛠️ How to Influence Tool Usage**
+
+#### **1. Explicit Tool Requests**
+```python
+# Make it clear you want a tool:
+"Use the calculate tool to multiply 15 by 8"
+# vs
+"What's 15 times 8?" (might get direct math response)
+```
+
+#### **2. Tool Choice Parameter**
+```python
+# Force tool usage:
+tool_choice="required"  # Must use a tool
+tool_choice="auto"      # Let Azure OpenAI decide
+tool_choice="none"      # Don't use tools
+```
+
+#### **3. Better Tool Descriptions**
+```python
+# Good description:
+"description": "Perform mathematical calculations with high precision"
+
+# Poor description:
+"description": "Does math"
+```
+
+### **📈 Debugging Tool Selection**
+
+```python
+# Add logging to understand Azure OpenAI's decisions:
+
+response = self.azure_client.chat.completions.create(...)
+message = response.choices[0].message
+
+print(f"User input: {user_message}")
+print(f"Tool calls triggered: {bool(message.tool_calls)}")
+if message.tool_calls:
+    for tool_call in message.tool_calls:
+        print(f"  Tool: {tool_call.function.name}")
+        print(f"  Args: {tool_call.function.arguments}")
+else:
+    print(f"Direct response: {message.content}")
+```
+
+### **🎉 Summary**
+
+The `message.tool_calls` field is populated when:
+
+1. **Azure OpenAI receives your request** with available tools
+2. **Azure OpenAI analyzes the request** and determines tools are needed
+3. **Azure OpenAI formats the tool calls** with appropriate parameters
+4. **Your client code checks** `if message.tool_calls:` and executes them
+5. **Results are sent back** to Azure OpenAI for final response
+
+This mechanism is what makes the **bridge between Azure OpenAI and MCP servers** work seamlessly! 🚀

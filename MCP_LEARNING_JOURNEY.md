@@ -140,6 +140,7 @@ python clientnetwork.py
 #### Files to Study:
 - [`azure_mcp_server.py`](azure_mcp_server.py) - Enhanced MCP server with rich tools
 - [`azure_openai_mcp_client.py`](azure_openai_mcp_client.py) - Azure OpenAI client using MCP tools
+- [`azure_openai_mcp_client_interactive.py`](azure_openai_mcp_client_interactive.py) - Interactive Azure OpenAI + MCP client
 - [`setup.py`](setup.py) - Configuration helper script
 
 #### Key Concepts:
@@ -147,11 +148,13 @@ python clientnetwork.py
 - **Tool bridging**: Converting MCP tools to OpenAI function definitions
 - **Real-time capabilities**: How MCP extends AI with live data
 - **Multi-step operations**: Complex workflows using multiple tools
+- **Interactive AI**: Conversational AI that can use tools dynamically
 
 #### Learning Resources:
 - 📖 [Azure OpenAI + MCP Guide](README_AZURE_OPENAI_MCP.md) - Complete setup and usage guide
 - 📖 [Technical Deep-dive](azure_openai_mcp_explanation.md) - How the integration works internally
 - 📖 [Client Code Explanation](azure_openai_mcp_client_explanation.md) - Detailed breakdown of the Python client code
+- 📖 [Interactive Client Explanation](azure_openai_mcp_client_interactive_explanation.md) - How the interactive client works
 - 📖 [Server Code Explanation](azure_mcp_server_explanation.md) - Detailed breakdown of the Python server code
 
 #### **🌐 Network Flow & Connection Details**
@@ -228,7 +231,16 @@ pip install openai mcp psutil
 python setup.py
 ```
 
-**Run the Integration:**
+**Option 1: Interactive Experience (Recommended)**
+```bash
+# Terminal 1: Start enhanced MCP server
+python azure_mcp_server.py
+
+# Terminal 2: Run interactive Azure OpenAI client
+python azure_openai_mcp_client_interactive.py
+```
+
+**Option 2: Automated Demo**
 ```bash
 # Terminal 1: Start enhanced MCP server
 python azure_mcp_server.py
@@ -237,15 +249,32 @@ python azure_mcp_server.py
 python azure_openai_mcp_client.py
 ```
 
-**Expected Output (Demo Mode):**
+**Expected Output (Interactive Mode):**
 ```
-🎭 DEMO MODE - Simulated Azure OpenAI + MCP interaction:
-💬 User: Calculate 15 + 25 and then save the result to a file
-🔧 Azure OpenAI would call: calculate(operation='add', a=15, b=25)
-📋 MCP Result: Result: 15.0 add 25.0 = 40.0
-🔧 Azure OpenAI would call: save_text_file(filename='calculation.txt', content='15 + 25 = 40')
-📋 MCP Result: Successfully saved content to calculation.txt
-🤖 Azure OpenAI: I've calculated 15 + 25 = 40 and saved the result to calculation.txt
+🤖 Interactive Azure OpenAI + MCP Chat Session
+==================================================
+
+📋 What would you like to do?
+1. Chat with Azure OpenAI (using MCP tools)
+2. View available MCP tools
+3. View conversation history
+4. Clear conversation history
+5. Try example conversations
+6. Exit
+
+Enter your choice (1-6): 1
+
+💬 Chat with Azure OpenAI (type 'back' to return to menu)
+
+You: Calculate 15 * 8 and save the result to a file
+
+🔧 Azure OpenAI is using tools:
+  📞 Calling calculate with args: {'operation': 'multiply', 'a': 15, 'b': 8}
+  📋 Result: Result: 15.0 multiply 8.0 = 120.0
+  📞 Calling save_text_file with args: {'filename': 'result.txt', 'content': '15 * 8 = 120'}
+  📋 Result: Successfully saved content to result.txt
+
+🤖 Azure OpenAI: I've calculated 15 * 8 = 120 and saved the result to result.txt
 ```
 
 #### What You'll Learn:

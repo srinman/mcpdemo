@@ -32,21 +32,56 @@ server.py + client.py      servernetwork.py +           azure_mcp_server.py +
 #### Learning Resources:
 - 📖 [Server.py Explanation](server_explanation.md) - Detailed breakdown of MCP server
 - 📖 [Client.py Explanation](client_explanation.md) - Detailed breakdown of MCP client
+- 📖 [Interactive Client Example](interactive_client_explanation.md) - How MCP prompts work in practice
 
 #### Hands-on Exercise:
+
+**Basic Communication:**
 ```bash
 # Try the basic example
 python client.py
 ```
 
-**Expected Output:**
+**Interactive Experience:**
+```bash
+# Try the interactive client to see how prompts work
+python interactive_client.py
 ```
-Hello, Azure OpenAI!
+
+**Expected Output (Interactive):**
+```
+🚀 Interactive MCP Client
+==============================
+
+📋 What would you like to do?
+1. Use a tool directly
+2. Get helpful prompts
+3. Check server info
+4. Exit
+
+Enter your choice (1-4): 2
+
+💡 Getting helpful prompts from server...
+
+📝 Available prompts (3):
+   1. Prompt asking for a name to greet
+   2. Suggest trying a friendly greeting
+   3. Ask about server capabilities
+
+Select prompt (1-3): 2
+
+💭 Prompt: Try asking me to greet someone! I can say hello to anyone you'd like.
+   (This prompt suggests what you might want to ask)
+
+Your response: World
+
+🎉 Hello Hello, World!
 ```
 
 #### What You'll Learn:
 - ✅ How MCP servers expose tools to clients
 - ✅ How clients communicate with servers via stdin/stdout
+- ✅ **How prompts help guide user interactions** (key UX feature)
 - ✅ Basic tool registration and calling
 - ✅ The role of FastMCP in simplifying server creation
 

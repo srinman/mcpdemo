@@ -33,6 +33,7 @@ Jump to the practical implementation guide:
 |------|---------|---------------|
 | `server.py` | Basic MCP server (stdio) | Step 1 |
 | `client.py` | Basic MCP client (stdio) | Step 1 |
+| `interactive_client.py` | Interactive client showing prompts | Step 1 |
 | `servernetwork.py` | Network MCP server (SSE) | Step 2 |
 | `clientnetwork.py` | Network MCP client (SSE) | Step 2 |
 | `azure_mcp_server.py` | Enhanced MCP server for Azure OpenAI | Step 3 |
@@ -48,6 +49,7 @@ Jump to the practical implementation guide:
 | `azure_openai_mcp_client_explanation.md` | Client code breakdown |
 | `azure_mcp_server_explanation.md` | Server code breakdown |
 | `server_explanation.md` | Basic server explanation |
+| `interactive_client_explanation.md` | How MCP prompts work in practice |
 | `client_explanation.md` | Basic client explanation |
 | `servernetwork_explanation.md` | Network server explanation |
 | `clientnetwork_explanation.md` | Network client explanation |
@@ -69,7 +71,14 @@ Jump to the practical implementation guide:
 ```
 **➡️ [Begin Learning Journey](MCP_LEARNING_JOURNEY.md)**
 
-### **Option 2: Jump to Azure OpenAI Integration**
+### **Option 2: Try Interactive MCP Experience**
+```bash
+# See how MCP prompts work in practice
+python interactive_client.py
+```
+**➡️ [Interactive Client Explanation](interactive_client_explanation.md)**
+
+### **Option 3: Jump to Azure OpenAI Integration**
 ```bash
 # Install dependencies
 pip install openai mcp psutil
@@ -84,7 +93,7 @@ python azure_mcp_server.py
 python azure_openai_mcp_client.py
 ```
 
-### **Option 3: Test Everything**
+### **Option 4: Test Everything**
 ```bash
 # Quick functionality test
 python quick_test.py

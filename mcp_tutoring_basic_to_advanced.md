@@ -1,4 +1,4 @@
-# MCP Learning Journey - From Hello World to Azure OpenAI Integration
+# MCP Tutoring - From Hello World to Azure OpenAI Integration
 
 This document outlines a complete learning journey for **Model Context Protocol (MCP)**, starting from basic concepts and progressing to advanced Azure OpenAI integration.
 

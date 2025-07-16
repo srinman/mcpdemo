@@ -1,5 +1,5 @@
 # Multi-stage build for optimized container size
-FROM python:3.10-slim as builder
+FROM python:3.11-slim as builder
 
 # Set working directory
 WORKDIR /app
@@ -12,10 +12,11 @@ RUN apt-get update && apt-get install -y \
 
 # Copy requirements and install dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir --user -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir --user -r requirements.txt
 
 # Production stage
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 # Set working directory
 WORKDIR /app
@@ -35,7 +36,7 @@ RUN mkdir -p /app/memento_storage && \
     chown -R mcpuser:mcpuser /app
 
 # Set environment variables
-ENV PYTHONPATH=/home/mcpuser/.local/lib/python3.10/site-packages
+ENV PYTHONPATH=/home/mcpuser/.local/lib/python3.11/site-packages
 ENV PATH=/home/mcpuser/.local/bin:$PATH
 ENV MCP_SSE_HOST=0.0.0.0
 ENV MCP_SSE_PORT=8000

@@ -1,22 +1,13 @@
 # Memento MCP Server and Client Dependencies
 
-# Core MCP library - specific version for Python 3.10 compatibility
-mcp==1.0.0
-
-# FastMCP for server creation
-fastmcp
+# Core MCP library - use latest version
+mcp
 
 # Azure OpenAI
-openai>=1.0.0
+openai
 
 # Environment management
 python-dotenv
 
 # HTTP client for health checks
 requests
-
-# Async support
-anyio>=3.0.0,<4.0.0
-
-# Additional utilities (pathlib is built-in since Python 3.4)
-# pathlib - removed as it's built-in

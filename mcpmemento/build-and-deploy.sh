@@ -6,7 +6,7 @@ set -e
 # Configuration
 REGISTRY_NAME="your-acr-name"  # Replace with your Azure Container Registry name
 IMAGE_NAME="memento-mcp-server"
-IMAGE_TAG="v1.0.0"
+IMAGE_TAG="v1.0.1"
 FULL_IMAGE_NAME="${REGISTRY_NAME}.azurecr.io/${IMAGE_NAME}:${IMAGE_TAG}"
 
 echo "🚀 Building and Deploying Memento MCP Server to AKS"

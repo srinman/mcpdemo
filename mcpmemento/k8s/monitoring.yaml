@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ServiceMonitor
+metadata:
+  name: memento-mcp-monitor
+  namespace: memento
+  labels:
+    app: memento-mcp-server
+spec:
+  selector:
+    matchLabels:
+      app: memento-mcp-server
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 30s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: memento-mcp-rules
+  namespace: memento
+spec:
+  groups:
+  - name: memento-mcp
+    rules:
+    - alert: MementoMCPDown
+      expr: up{job="memento-mcp-server"} == 0
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Memento MCP Server is down"
+        description: "Memento MCP Server has been down for more than 5 minutes"
+    
+    - alert: MementoMCPHighMemory
+      expr: container_memory_usage_bytes{container="memento-mcp-server"} / container_spec_memory_limit_bytes{container="memento-mcp-server"} > 0.9
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Memento MCP Server high memory usage"
+        description: "Memory usage is above 90% for more than 10 minutes"

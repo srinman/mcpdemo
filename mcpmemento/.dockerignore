@@ -1,0 +1,45 @@
+# Ignore unnecessary files for Docker build
+*.md
+*.log
+*.pcap
+.git
+.gitignore
+.env
+.vscode
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+.DS_Store
+.coverage
+htmlcov
+.pytest_cache
+.mypy_cache
+.idea
+*.swp
+*.swo
+*~
+
+# Ignore local storage during build (will be created at runtime)
+memento_storage/
+
+# Ignore network monitoring files
+network_*.py
+network_*.sh
+demo_*.sh
+test_*.py
+traffic_generator.py
+
+# Ignore client files
+*client*.py
+*tracing*.py
+
+# Ignore documentation
+*_WORKFLOW.md
+NETWORK_MONITORING.md
+IMPLEMENTATION.md
+CLIENT_WORKFLOW.md
+SERVER_WORKFLOW.md

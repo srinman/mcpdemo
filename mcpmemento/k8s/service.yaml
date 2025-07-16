@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: memento-mcp-service
+  namespace: memento
+  labels:
+    app: memento-mcp-server
+  annotations:
+    # Azure Load Balancer configuration for IP whitelisting
+    service.beta.kubernetes.io/azure-load-balancer-source-ranges: "135.134.199.24/32"
+    service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path: "/health"
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  selector:
+    app: memento-mcp-server
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800  # 3 hours
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: memento-mcp-service-internal
+  namespace: memento
+  labels:
+    app: memento-mcp-server
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  selector:
+    app: memento-mcp-server

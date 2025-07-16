@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: memento
+  labels:
+    name: memento
+    environment: production
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: memento-config
+  namespace: memento
+data:
+  MCP_SSE_HOST: "0.0.0.0"
+  MCP_SSE_PORT: "8000"
+  PYTHONUNBUFFERED: "1"
+  # Add any other configuration variables here

@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: memento-network-policy
+  namespace: memento
+spec:
+  podSelector:
+    matchLabels:
+      app: memento-mcp-server
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system  # Allow kube-system for health checks
+    - podSelector: {}  # Allow pods in same namespace
+    ports:
+    - protocol: TCP
+      port: 8000
+  egress:
+  - {} # Allow all egress traffic (needed for health checks and external APIs if required)

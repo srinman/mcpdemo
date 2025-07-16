@@ -456,19 +456,12 @@ def retrieve_memory_prompt() -> str:
 Example: "Show me all memories for alice from last week tagged with 'work'"
 """
 
-# Add health check endpoint
-@mcp.get("/health")
-def health_check():
-    """Health check endpoint for Kubernetes probes"""
-    return {"status": "healthy", "timestamp": datetime.datetime.now().isoformat()}
-
 if __name__ == "__main__":
     print("🧠 Starting Memento MCP Server")
     print("📁 Personal Memory Storage System")
     print("🔐 User-isolated file storage")
     print(f"💾 Storage directory: {STORAGE_BASE_DIR.absolute()}")
     print("📡 Server will be accessible at http://0.0.0.0:8000/sse")
-    print("🏥 Health check available at http://0.0.0.0:8000/health")
     print()
     print("🔧 Available tools:")
     print("  - store_memory: Store content for a user")

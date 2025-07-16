@@ -1,0 +1,13 @@
+# Memento MCP Server and Client Dependencies
+
+# Core MCP library
+mcp
+
+# Azure OpenAI
+openai
+
+# Environment management
+python-dotenv
+
+# Additional utilities
+pathlib

@@ -478,11 +478,18 @@ if __name__ == "__main__":
     
     print(f"🚀 Starting server on {host}:{port}")
     
-    # Import uvicorn to manually control host binding
-    import uvicorn
+    # Monkey patch uvicorn's Config to force host binding
+    import uvicorn.config
+    original_config_init = uvicorn.config.Config.__init__
     
-    # Get the FastAPI app from FastMCP
-    app = mcp.create_app(transport="sse")
+    def patched_config_init(self, app, *args, **kwargs):
+        # Always override host and port
+        kwargs['host'] = host
+        kwargs['port'] = port
+        print(f"🔧 Patched uvicorn config: host={kwargs['host']}, port={kwargs['port']}")
+        return original_config_init(self, app, *args, **kwargs)
     
-    # Run uvicorn directly with explicit host binding
-    uvicorn.run(app, host=host, port=port)
+    uvicorn.config.Config.__init__ = patched_config_init
+    
+    # Run with SSE transport for network access
+    mcp.run(transport="sse")

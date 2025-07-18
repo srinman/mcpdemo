@@ -111,76 +111,76 @@ The Memento MCP Server demonstrates a simple but practical use case:
 └───────────┼────────────────────┼──────────────────────────────┘
             │                    │
             ▼                    ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                Azure Cloud Services                             │
-│                                                                 │
-│  ┌─────────────────┐              ┌─────────────────┐          │
-│  │ Azure OpenAI    │              │                 │          │
-│  │ Service         │              │ Azure Files     │          │
-│  │                 │              │ Persistent      │          │
-│  │ - GPT-4o-mini   │              │ Volume          │          │
-│  │ - Tool Calling  │              │                 │          │
-│  │ - Chat API      │              │ /memento_       │          │
-│  └─────────────────┘              │ storage/        │          │
-│                                   │ ├── alice/      │          │
-│                                   │ ├── bob/        │          │
-│                                   │ └── charlie/    │          │
-│                                   │                 │          │
-│                                   └─────────────────┘          │
-└─────────────────────────────────────────────────────────────────┘
-                                           ▲
-                                           │ Mount
-┌─────────────────────────────────────────┼───────────────────────┐
-│              Azure Kubernetes Service   │                       │
-│                                         │                       │
-│  ┌─────────────────┐                    │                      │
-│  │ Load Balancer   │                    │                      │
-│  │                 │                    │                      │
-│  │ Public IP:      │                    │                      │
-│  │ AKS_LOAD_       │                    │                      │
-│  │ BALANCER_IP     │                    │                      │
-│  │                 │                    │                      │
-│  │ IP Whitelist:   │                    │                      │
-│  │ YOUR_HOME_IP    │                    │                      │
-│  └─────────────────┘                    │                      │
-│           │                             │                      │
-│           │ Session Affinity             │                      │
-│           │ (ClientIP)                  │                      │
-│           ▼                             │                      │
-│  ┌─────────────────┐                    │                      │
-│  │                 │                    │                      │
-│  │ Pod A           │◄───────────────────┘                      │
-│  │ ┌─────────────┐ │ Mount                                     │
-│  │ │MCP Server   │ │                                           │
-│  │ │             │ │                                           │
-│  │ │memento_mcp_ │ │                                           │
-│  │ │server.py    │ │                                           │
-│  │ │             │ │                                           │
-│  │ │0.0.0.0:8000 │ │                                           │
-│  │ └─────────────┘ │                                           │
-│  └─────────────────┘                                           │
-│                                                                │
-│  ┌─────────────────┐                    ▲                     │
-│  │                 │                    │                     │
-│  │ Pod B           │◄───────────────────┘                     │
-│  │ ┌─────────────┐ │ Mount                                    │
-│  │ │MCP Server   │ │                                          │
-│  │ │             │ │                                          │
-│  │ │memento_mcp_ │ │                                          │
-│  │ │server.py    │ │                                          │
-│  │ │             │ │                                          │
-│  │ │0.0.0.0:8000 │ │                                          │
-│  │ └─────────────┘ │                                          │
-│  └─────────────────┘                                          │
-└─────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────┐
+│                        Azure Cloud Services                           │
+│                                                                       │
+│  ┌─────────────────┐                                                 │
+│  │ Azure OpenAI    │                                                 │
+│  │ Service         │                                                 │
+│  │                 │                                                 │
+│  │ - GPT-4o-mini   │                                                 │
+│  │ - Tool Calling  │                                                 │
+│  │ - Chat API      │                                                 │
+│  └─────────────────┘                                                 │
+│                                                                       │
+│  ┌─────────────────────────────────────────────────────────────────┐ │
+│  │              Azure Kubernetes Service (AKS)                     │ │
+│  │                                                                 │ │
+│  │  ┌─────────────────┐              ┌─────────────────┐          │ │
+│  │  │ Load Balancer   │              │                 │          │ │
+│  │  │                 │              │ Azure Files     │          │ │
+│  │  │ Public IP:      │              │ Persistent      │          │ │
+│  │  │ AKS_LOAD_       │              │ Volume          │          │ │
+│  │  │ BALANCER_IP     │              │                 │          │ │
+│  │  │                 │              │ /memento_       │          │ │
+│  │  │ IP Whitelist:   │              │ storage/        │          │ │
+│  │  │ YOUR_HOME_IP    │              │ ├── alice/      │          │ │
+│  │  └─────────────────┘              │ ├── bob/        │          │ │
+│  │           │                       │ └── charlie/    │          │ │
+│  │           │ Session Affinity       │                 │          │ │
+│  │           │ (ClientIP)            └─────────────────┘          │ │
+│  │           ▼                               ▲                    │ │
+│  │  ┌─────────────────┐                     │ Mount              │ │
+│  │  │                 │                     │                    │ │
+│  │  │ Pod A           │◄────────────────────┘                    │ │
+│  │  │ ┌─────────────┐ │                                          │ │
+│  │  │ │MCP Server   │ │                                          │ │
+│  │  │ │             │ │                                          │ │
+│  │  │ │memento_mcp_ │ │                                          │ │
+│  │  │ │server.py    │ │                                          │ │
+│  │  │ │             │ │                                          │ │
+│  │  │ │0.0.0.0:8000 │ │                                          │ │
+│  │  │ └─────────────┘ │                                          │ │
+│  │  └─────────────────┘                                          │ │
+│  │                                                               │ │
+│  │  ┌─────────────────┐                     ▲                   │ │
+│  │  │                 │                     │ Mount             │ │
+│  │  │ Pod B           │◄────────────────────┘                   │ │
+│  │  │ ┌─────────────┐ │                                         │ │
+│  │  │ │MCP Server   │ │                                         │ │
+│  │  │ │             │ │                                         │ │
+│  │  │ │memento_mcp_ │ │                                         │ │
+│  │  │ │server.py    │ │                                         │ │
+│  │  │ │             │ │                                         │ │
+│  │  │ │0.0.0.0:8000 │ │                                         │ │
+│  │  │ └─────────────┘ │                                         │ │
+│  │  └─────────────────┘                                         │ │
+│  └─────────────────────────────────────────────────────────────────┘ │
+└───────────────────────────────────────────────────────────────────────┘
 
 Data Flow:
-1. User: "Store this meeting summary" → MCP Client
+1. User: "Store this meeting summary" → MCP Client (Local)
 2. MCP Client → Azure OpenAI: Natural language processing + tool calling
 3. Azure OpenAI → MCP Client: Tool calls (store_memory, retrieve_memories)
-4. MCP Client → AKS MCP Server: Execute tool calls via SSE
-5. AKS MCP Server → Azure Files: Persist user data
-6. Response flows back: Azure Files → MCP Server → MCP Client → User
+4. MCP Client → AKS Load Balancer → MCP Server Pod: Execute tool calls via SSE
+5. MCP Server Pod → Azure Files: Read/Write user data (mounted volume)
+6. Response flows back: Azure Files → MCP Server → Load Balancer → MCP Client → User
+
+Key Points:
+- MCP Client (local) never directly accesses Azure Files
+- Only MCP Server pods running on AKS access Azure Files storage
+- Azure Files is mounted as persistent volume inside AKS cluster
+- All storage operations happen server-side within the AKS environment
 ```
 
 ## Key Architectural Components

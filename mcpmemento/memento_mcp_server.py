@@ -478,9 +478,11 @@ if __name__ == "__main__":
     
     print(f"🚀 Starting server on {host}:{port}")
     
-    # Set environment variables that FastMCP uses internally
-    os.environ["MCP_SSE_HOST"] = host
-    os.environ["MCP_SSE_PORT"] = str(port)
+    # Import uvicorn to manually control host binding
+    import uvicorn
     
-    # Run with SSE transport for network access
-    mcp.run(transport="sse")
+    # Get the FastAPI app from FastMCP
+    app = mcp.create_app(transport="sse")
+    
+    # Run uvicorn directly with explicit host binding
+    uvicorn.run(app, host=host, port=port)

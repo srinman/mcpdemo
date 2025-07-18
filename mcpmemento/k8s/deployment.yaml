@@ -5,7 +5,7 @@ metadata:
   namespace: memento
   labels:
     app: memento-mcp-server
-    version: v1.0.3
+    version: v1.0.4
 spec:
   replicas: 2
   selector:
@@ -15,11 +15,11 @@ spec:
     metadata:
       labels:
         app: memento-mcp-server
-        version: v1.0.3
+        version: v1.0.4
     spec:
       containers:
       - name: memento-mcp-server
-        image: srinmantest.azurecr.io/memento-mcp-server:v1.0.3
+        image: srinmantest.azurecr.io/memento-mcp-server:v1.0.4
         imagePullPolicy: Always
         ports:
         - containerPort: 8000

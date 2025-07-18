@@ -47,7 +47,7 @@ The Memento MCP Server demonstrates a simple but practical use case:
 ```
 ┌─────────────────┐    Network    ┌─────────────────┐
 │Network Client   │◄──────────────│Network Server   │
-│                 │    (LAN)      │                 │
+│                 │  (Same Host)  │                 │
 │ clientnetwork   │               │ servernetwork   │
 │     .py         │               │     .py         │
 └─────────────────┘               └─────────────────┘
@@ -60,10 +60,10 @@ The Memento MCP Server demonstrates a simple but practical use case:
 ```
 
 **Characteristics**:
-- Network communication over LAN
-- Server binds to 0.0.0.0 for network access
-- Still local file storage
-- Introduction of network protocols
+- Network communication on same machine (127.0.0.1 or localhost)
+- Server binds to 0.0.0.0 for network access capability
+- Still local file storage on same machine
+- Introduction of network protocols and binding concepts
 
 ### Phase 3: Azure OpenAI Integration
 **Files**: `azure_mcp_server.py`, `azure_openai_mcp_client_interactive.py`
@@ -114,15 +114,6 @@ The Memento MCP Server demonstrates a simple but practical use case:
 ┌───────────────────────────────────────────────────────────────────────┐
 │                        Azure Cloud Services                           │
 │                                                                       │
-│  ┌─────────────────┐                                                 │
-│  │ Azure OpenAI    │                                                 │
-│  │ Service         │                                                 │
-│  │                 │                                                 │
-│  │ - GPT-4o-mini   │                                                 │
-│  │ - Tool Calling  │                                                 │
-│  │ - Chat API      │                                                 │
-│  └─────────────────┘                                                 │
-│                                                                       │
 │  ┌─────────────────────────────────────────────────────────────────┐ │
 │  │              Azure Kubernetes Service (AKS)                     │ │
 │  │                                                                 │ │
@@ -166,6 +157,15 @@ The Memento MCP Server demonstrates a simple but practical use case:
 │  │  │ └─────────────┘ │                                         │ │
 │  │  └─────────────────┘                                         │ │
 │  └─────────────────────────────────────────────────────────────────┘ │
+│                                                                       │
+│                                   ┌─────────────────┐                 │
+│                                   │ Azure OpenAI    │                 │
+│                                   │ Service         │                 │
+│                                   │                 │                 │
+│                                   │ - GPT-4o-mini   │                 │
+│                                   │ - Tool Calling  │                 │
+│                                   │ - Chat API      │                 │
+│                                   └─────────────────┘                 │
 └───────────────────────────────────────────────────────────────────────┘
 
 Data Flow:

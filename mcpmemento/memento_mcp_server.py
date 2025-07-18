@@ -471,10 +471,12 @@ if __name__ == "__main__":
     print("  - delete_memory: Delete a specific memory")
     print("  - get_user_stats: Get storage statistics for a user")
     print()
-    
+
     # Set environment variables for network access
-    os.environ["MCP_SSE_HOST"] = os.getenv("MCP_SSE_HOST", "0.0.0.0")
-    os.environ["MCP_SSE_PORT"] = os.getenv("MCP_SSE_PORT", "8000")
+    host = os.getenv("MCP_SSE_HOST", "0.0.0.0")
+    port = int(os.getenv("MCP_SSE_PORT", "8000"))
+    
+    print(f"🚀 Starting server on {host}:{port}")
     
     # Run with SSE transport for network access
-    mcp.run(transport="sse")
+    mcp.run(transport="sse", host=host, port=port)

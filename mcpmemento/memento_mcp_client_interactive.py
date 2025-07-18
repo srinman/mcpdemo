@@ -23,7 +23,7 @@ AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY", "your-api-key")
 AZURE_OPENAI_DEPLOYMENT = os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-4o-mini")
 
 class InteractiveMementoMCPClient:
-    def __init__(self, mcp_server_url: str = "http://localhost:8000/sse"):
+    def __init__(self, mcp_server_url: str = "http://4.153.91.177:8000/sse"):
         self.mcp_server_url = mcp_server_url
         self.azure_client = AzureOpenAI(
             api_key=AZURE_OPENAI_API_KEY,

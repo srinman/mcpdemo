@@ -8,7 +8,6 @@ metadata:
   annotations:
     # Azure Load Balancer configuration for IP whitelisting
     service.beta.kubernetes.io/azure-load-balancer-source-ranges: "135.134.199.24/32"
-    service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path: "/health"
 spec:
   type: LoadBalancer
   ports:

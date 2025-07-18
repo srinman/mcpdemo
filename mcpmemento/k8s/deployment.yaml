@@ -5,7 +5,7 @@ metadata:
   namespace: memento
   labels:
     app: memento-mcp-server
-    version: v1.0.4
+    version: v1.0.5
 spec:
   replicas: 2
   selector:
@@ -15,11 +15,11 @@ spec:
     metadata:
       labels:
         app: memento-mcp-server
-        version: v1.0.4
+        version: v1.0.5
     spec:
       containers:
       - name: memento-mcp-server
-        image: srinmantest.azurecr.io/memento-mcp-server:v1.0.4
+        image: srinmantest.azurecr.io/memento-mcp-server:v1.0.5
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
@@ -70,4 +70,4 @@ spec:
   resources:
     requests:
       storage: 10Gi
-  storageClassName: managed-csi # Azure Files CSI driver
+  storageClassName: azurefile-csi # Azure Files CSI driver

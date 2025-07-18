@@ -22,9 +22,14 @@ AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT", "https://your-resourc
 AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY", "your-api-key")
 AZURE_OPENAI_DEPLOYMENT = os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-4o-mini")
 
+# MCP Server configuration
+MCP_SERVER_HOSTNAME = os.getenv("MCP_SERVER_HOSTNAME", "127.0.0.1")
+MCP_SERVER_PORT = os.getenv("MCP_SERVER_PORT", "8000")
+DEFAULT_MCP_SERVER_URL = f"http://{MCP_SERVER_HOSTNAME}:{MCP_SERVER_PORT}/sse"
+
 class InteractiveMementoMCPClient:
-    def __init__(self, mcp_server_url: str = "http://4.153.91.177:8000/sse"):
-        self.mcp_server_url = mcp_server_url
+    def __init__(self, mcp_server_url: str = None):
+        self.mcp_server_url = mcp_server_url or DEFAULT_MCP_SERVER_URL
         self.azure_client = AzureOpenAI(
             api_key=AZURE_OPENAI_API_KEY,
             api_version="2024-10-21",
@@ -38,7 +43,7 @@ class InteractiveMementoMCPClient:
     
     async def connect_to_mcp(self):
         """Connect to the MCP server and get available tools"""
-        print("🔗 Connecting to Memento MCP server...")
+        print(f"🔗 Connecting to Memento MCP server at {self.mcp_server_url}...")
         self.sse_client = sse_client(self.mcp_server_url)
         self.read, self.write = await self.sse_client.__aenter__()
         
@@ -467,6 +472,7 @@ async def main():
     print("🧠 AI-powered personal memory storage")
     print("👥 Multi-user support with data isolation")
     print("🔍 Natural language memory operations")
+    print(f"🌐 Server: {DEFAULT_MCP_SERVER_URL}")
     print()
     
     # Check if environment variables are set
@@ -475,6 +481,10 @@ async def main():
         print("   AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com")
         print("   AZURE_OPENAI_API_KEY=your-api-key")
         print("   AZURE_OPENAI_DEPLOYMENT=your-deployment-name")
+        print()
+        print("💡 Optional: Set MCP server configuration:")
+        print("   MCP_SERVER_HOSTNAME=4.153.91.177  # Default: 127.0.0.1")
+        print("   MCP_SERVER_PORT=8000              # Default: 8000")
         print()
         
         demo_mode = input("Would you like to see a demo of the system? (y/n): ").lower().strip()
@@ -509,8 +519,9 @@ async def main():
         print("\n\n👋 Session interrupted. Goodbye!")
     except Exception as e:
         print(f"\n❌ Error: {e}")
-        print("Make sure the Memento MCP server is running:")
-        print("  python memento_mcp_server.py")
+        print(f"Make sure the Memento MCP server is running at {DEFAULT_MCP_SERVER_URL}")
+        print("Local server: python memento_mcp_server.py")
+        print("Or set MCP_SERVER_HOSTNAME in .env for remote server")
     
     finally:
         await client.cleanup()

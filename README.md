@@ -64,6 +64,16 @@ Jump to the practical implementation guide:
 | `quick_test.py` | Quick MCP server testing |
 | `test_mcp_server.py` | Comprehensive testing |
 
+### **🧠 Memento: AI Memory System**
+All Memento-related files are organized in the [`memento/`](memento/) subdirectory:
+- **File-based implementation**: `memento_server_files.py`, `memento_client_files.py`
+- **SQLite implementation**: `memento_server.py`, `memento_client.py`
+- **Documentation**: `README_MEMENTO_FILES.md`, `README_MEMENTO.md`
+- **Tests and demos**: Various test scripts and interactive demos
+- **Memory storage**: User memory files in `memento_memories/`
+
+**➡️ [Explore Memento Documentation](memento/README_MEMENTO_FILES.md)**
+
 ## 🚀 Quick Start Options
 
 ### **Option 1: Follow the Full Learning Journey**

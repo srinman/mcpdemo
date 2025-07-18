@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines the evolution of a Model Context Protocol (MCP) demonstration from a simple local file-based system to a production-ready Kubernetes deployment on Azure Kubernetes Service (AKS) with Azure Files storage. The primary use case is to provide users with a natural language interface to store and retrieve personal memories in a centralized, secure location.
+This document outlines the evolution of a Model Context Protocol (MCP) demonstration from a simple local file-based system to a comprehensive Kubernetes deployment example on Azure Kubernetes Service (AKS) with Azure Files storage. The primary use case is to provide users with a natural language interface to store and retrieve personal memories in a centralized, secure location.
 
 ## Use Case
 
@@ -13,7 +13,7 @@ The Memento MCP Server demonstrates a simple but practical use case:
 - **Storage**: Centralized server with persistent storage and multi-user isolation
 - **Access**: Remote access from local workstations to cloud-hosted MCP server
 
-**Important Note**: This example primarily demonstrates remote MCP server deployment on AKS. Security considerations (authentication, authorization, encryption) are intentionally simplified and will be addressed in future examples.
+**Important Note**: This example primarily demonstrates remote MCP server deployment on AKS for educational and demonstration purposes. Security considerations (authentication, authorization, encryption) are intentionally simplified and will be addressed in future examples. This is NOT suitable for production use without significant security enhancements.
 
 ## Architecture Evolution
 
@@ -89,7 +89,7 @@ The Memento MCP Server demonstrates a simple but practical use case:
 - Interactive client interface
 - Cloud AI service integration
 
-### Phase 4: Production AKS Deployment (Current)
+### Phase 4: AKS Deployment Example (Current)
 **Files**: `memento_mcp_client_interactive.py`, `memento_mcp_server.py`
 
 ```
@@ -98,50 +98,71 @@ The Memento MCP Server demonstrates a simple but practical use case:
 │  ┌─────────────────┐                                           │
 │  │ MCP Client      │                                           │
 │  │ Interactive     │                                           │
-│  │                 │                                           │
-│  │ memento_mcp_    │                                           │
-│  │ client_         │                                           │
-│  │ interactive.py  │                                           │
-│  └─────────────────┘                                           │
-│           │                                                    │
-│           │ HTTPS/SSE                                          │
-│           │ (YOUR_HOME_IP → AKS_LOAD_BALANCER_IP:8000)        │
-└───────────┼────────────────────────────────────────────────────┘
-            │
-            ▼
+│  │                 │◄──────────┐                              │
+│  │ memento_mcp_    │           │ HTTPS API                    │
+│  │ client_         │           │ (Natural Language            │
+│  │ interactive.py  │           │  Processing)                 │
+│  └─────────────────┘           │                              │
+│           │                    │                              │
+│           │ HTTPS/SSE          │                              │
+│           │ (YOUR_HOME_IP →    │                              │
+│           │  AKS_LOAD_         │                              │
+│           │  BALANCER_IP:8000) │                              │
+└───────────┼────────────────────┼──────────────────────────────┘
+            │                    │
+            ▼                    ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                  Azure Kubernetes Service                       │
+│                Azure Cloud Services                             │
 │                                                                 │
 │  ┌─────────────────┐              ┌─────────────────┐          │
-│  │ Load Balancer   │              │                 │          │
-│  │                 │              │ Azure Files     │          │
-│  │ Public IP:      │              │ Persistent      │          │
-│  │ AKS_LOAD_       │              │ Volume          │          │
-│  │ BALANCER_IP     │              │                 │          │
-│  │                 │              │ /memento_       │          │
-│  │ IP Whitelist:   │              │ storage/        │          │
-│  │ YOUR_HOME_IP    │              │ ├── alice/      │          │
-│  └─────────────────┘              │ ├── alice/      │          │
-│           │                       │ ├── bob/        │          │
-│           │ Session Affinity       │ └── charlie/    │          │
-│           │ (ClientIP)            │                 │          │
-│           ▼                       └─────────────────┘          │
-│  ┌─────────────────┐                       ▲                  │
-│  │                 │                       │                  │
-│  │ Pod A           │◄──────────────────────┘                  │
-│  │ ┌─────────────┐ │ Mount                                    │
-│  │ │MCP Server   │ │                                          │
-│  │ │             │ │                                          │
-│  │ │memento_mcp_ │ │                                          │
-│  │ │server.py    │ │                                          │
-│  │ │             │ │                                          │
-│  │ │0.0.0.0:8000 │ │                                          │
-│  │ └─────────────┘ │                                          │
-│  └─────────────────┘                                          │
-│                                                               │
-│  ┌─────────────────┐                       ▲                  │
-│  │                 │                       │                  │
-│  │ Pod B           │◄──────────────────────┘                  │
+│  │ Azure OpenAI    │              │                 │          │
+│  │ Service         │              │ Azure Files     │          │
+│  │                 │              │ Persistent      │          │
+│  │ - GPT-4o-mini   │              │ Volume          │          │
+│  │ - Tool Calling  │              │                 │          │
+│  │ - Chat API      │              │ /memento_       │          │
+│  └─────────────────┘              │ storage/        │          │
+│                                   │ ├── alice/      │          │
+│                                   │ ├── bob/        │          │
+│                                   │ └── charlie/    │          │
+│                                   │                 │          │
+│                                   └─────────────────┘          │
+└─────────────────────────────────────────────────────────────────┘
+                                           ▲
+                                           │ Mount
+┌─────────────────────────────────────────┼───────────────────────┐
+│              Azure Kubernetes Service   │                       │
+│                                         │                       │
+│  ┌─────────────────┐                    │                      │
+│  │ Load Balancer   │                    │                      │
+│  │                 │                    │                      │
+│  │ Public IP:      │                    │                      │
+│  │ AKS_LOAD_       │                    │                      │
+│  │ BALANCER_IP     │                    │                      │
+│  │                 │                    │                      │
+│  │ IP Whitelist:   │                    │                      │
+│  │ YOUR_HOME_IP    │                    │                      │
+│  └─────────────────┘                    │                      │
+│           │                             │                      │
+│           │ Session Affinity             │                      │
+│           │ (ClientIP)                  │                      │
+│           ▼                             │                      │
+│  ┌─────────────────┐                    │                      │
+│  │                 │                    │                      │
+│  │ Pod A           │◄───────────────────┘                      │
+│  │ ┌─────────────┐ │ Mount                                     │
+│  │ │MCP Server   │ │                                           │
+│  │ │             │ │                                           │
+│  │ │memento_mcp_ │ │                                           │
+│  │ │server.py    │ │                                           │
+│  │ │             │ │                                           │
+│  │ │0.0.0.0:8000 │ │                                           │
+│  │ └─────────────┘ │                                           │
+│  └─────────────────┘                                           │
+│                                                                │
+│  ┌─────────────────┐                    ▲                     │
+│  │                 │                    │                     │
+│  │ Pod B           │◄───────────────────┘                     │
 │  │ ┌─────────────┐ │ Mount                                    │
 │  │ │MCP Server   │ │                                          │
 │  │ │             │ │                                          │
@@ -152,6 +173,14 @@ The Memento MCP Server demonstrates a simple but practical use case:
 │  │ └─────────────┘ │                                          │
 │  └─────────────────┘                                          │
 └─────────────────────────────────────────────────────────────────┘
+
+Data Flow:
+1. User: "Store this meeting summary" → MCP Client
+2. MCP Client → Azure OpenAI: Natural language processing + tool calling
+3. Azure OpenAI → MCP Client: Tool calls (store_memory, retrieve_memories)
+4. MCP Client → AKS MCP Server: Execute tool calls via SSE
+5. AKS MCP Server → Azure Files: Persist user data
+6. Response flows back: Azure Files → MCP Server → MCP Client → User
 ```
 
 ## Key Architectural Components
@@ -209,7 +238,7 @@ spec:
   resources:
     requests:
       storage: 10Gi
-  storageClassName: managed-csi  # Azure Files CSI driver
+  storageClassName: azurefile-csi  # Azure Files CSI driver
 ```
 
 **Directory Structure**:
@@ -368,14 +397,16 @@ DEFAULT_MCP_SERVER_URL = f"http://{MCP_SERVER_HOSTNAME}:{MCP_SERVER_PORT}/sse"
 
 **Deployment Scenarios**:
 - Development: `MCP_SERVER_HOSTNAME=127.0.0.1`
-- AKS: `MCP_SERVER_HOSTNAME=AKS_LOAD_BALANCER_IP`
-- Custom: `MCP_SERVER_HOSTNAME=my-server.example.com`
+- AKS Demo: `MCP_SERVER_HOSTNAME=AKS_LOAD_BALANCER_IP`
+- Custom Demo: `MCP_SERVER_HOSTNAME=my-server.example.com`
 
 ## Security Considerations (Future Work)
 
-**Current State**: Minimal security for demonstration purposes
+**Current State**: Minimal security for demonstration and educational purposes only
 
-**Future Enhancements**:
+**Production Readiness**: This example is NOT production-ready and requires significant security enhancements before any real-world deployment
+
+**Future Enhancements Required for Production**:
 - **Authentication**: User authentication and authorization
 - **Encryption**: TLS/SSL for data in transit
 - **Network Security**: VPN or private endpoints instead of public IP
@@ -383,7 +414,9 @@ DEFAULT_MCP_SERVER_URL = f"http://{MCP_SERVER_HOSTNAME}:{MCP_SERVER_PORT}/sse"
 - **Access Controls**: RBAC and fine-grained permissions
 - **Audit Logging**: Comprehensive access and operation logging
 
-## Deployment Process
+## Deployment Process (Demo/Development Only)
+
+**Warning**: This deployment is for demonstration and development purposes only. Do not use in production environments.
 
 ### 1. Build and Push Container
 ```bash
@@ -410,15 +443,17 @@ python memento_mcp_client_interactive.py
 
 ## Conclusion
 
-This architecture demonstrates the evolution from a simple local file system to a production-ready cloud deployment. The key achievements include:
+This architecture demonstrates the evolution from a simple local file system to a comprehensive cloud deployment example. This is a demonstration and educational project showcasing MCP server deployment concepts. The key learning objectives include:
 
-1. **Scalability**: Kubernetes deployment with multiple replicas
-2. **Persistence**: Azure Files for durable storage
-3. **Accessibility**: Remote access from local workstations
-4. **User Isolation**: Multi-tenant memory storage
-5. **Natural Language Interface**: AI-powered memory operations
-6. **Network Reliability**: Session affinity for stable connections
+1. **Scalability Concepts**: Kubernetes deployment with multiple replicas
+2. **Persistence Patterns**: Azure Files for durable storage
+3. **Remote Access Patterns**: Remote access from local workstations
+4. **Multi-tenancy Basics**: User isolation in memory storage
+5. **AI Integration**: Natural language interface with Azure OpenAI
+6. **Network Considerations**: Session affinity for stable connections
 
-The example showcases practical MCP server deployment while highlighting real-world challenges like network binding limitations and the creative solutions (monkey patching) required to overcome them.
+The example showcases practical MCP server deployment concepts while highlighting real-world challenges like network binding limitations and the creative solutions (monkey patching) required to overcome them.
 
-This foundation provides a solid base for future enhancements in security, scalability, and feature richness while demonstrating the viability of remote MCP server architectures.
+**Important**: This foundation provides educational value and demonstrates architectural patterns, but requires significant security and operational enhancements before any production consideration. Future examples will build upon this foundation to address production-ready security, monitoring, and operational concerns.
+
+This demonstrates the viability and potential of remote MCP server architectures in cloud-native environments.

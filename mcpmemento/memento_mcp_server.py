@@ -478,5 +478,9 @@ if __name__ == "__main__":
     
     print(f"🚀 Starting server on {host}:{port}")
     
+    # Set environment variables that FastMCP uses internally
+    os.environ["MCP_SSE_HOST"] = host
+    os.environ["MCP_SSE_PORT"] = str(port)
+    
     # Run with SSE transport for network access
-    mcp.run(transport="sse", host=host, port=port)
+    mcp.run(transport="sse")
